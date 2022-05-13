@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:sorteio_hoje/tela_contagem.dart';
 import 'package:sorteio_hoje/tela_pix.dart';
 import 'package:sorteio_hoje/tela_resultado.dart';
@@ -15,12 +16,34 @@ class TelaInicial extends StatefulWidget {
 }
 
 class _TelaInicialState extends State<TelaInicial> {
+  final _quantnumEC = TextEditingController();
+  final _minEC = TextEditingController();
+  final _maxEC = TextEditingController();
+
+  final BannerAd myBanner = BannerAd(
+    // adUnitId: 'ca-app-pub-9063270871484951/4125496930',
+    adUnitId: '/6499/example/banner',
+    size: AdSize.mediumRectangle,
+    request: AdRequest(),
+    listener: BannerAdListener(),
+  );
+
+  @override
+  void dispose() {
+    super.dispose();
+    _quantnumEC.dispose();
+    _minEC.dispose();
+    _maxEC.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    myBanner.load();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final quantnumEC = TextEditingController();
-    final minEC = TextEditingController();
-    final maxEC = TextEditingController();
-
     int numeroAle({required int min, required int max}) =>
         min + Random().nextInt(max - min + 1);
 
@@ -37,11 +60,13 @@ class _TelaInicialState extends State<TelaInicial> {
 
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(26),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 30,
+        ),
         child: ListView(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
               child: Image.asset(
                 'assets/imagem/sorteiohojelogo.png',
                 width: 10,
@@ -60,7 +85,7 @@ class _TelaInicialState extends State<TelaInicial> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: TextFormField(
-                          controller: quantnumEC,
+                          controller: _quantnumEC,
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
                               hintText: 'Quantiade',
@@ -98,7 +123,7 @@ class _TelaInicialState extends State<TelaInicial> {
                           const SizedBox(width: 10),
                           Expanded(
                             child: TextFormField(
-                                controller: minEC,
+                                controller: _minEC,
                                 keyboardType: TextInputType.number,
                                 decoration: InputDecoration(
                                     hintText: 'Mínimo',
@@ -128,7 +153,7 @@ class _TelaInicialState extends State<TelaInicial> {
                           const SizedBox(width: 10),
                           Expanded(
                             child: TextFormField(
-                                controller: maxEC,
+                                controller: _maxEC,
                                 keyboardType: TextInputType.number,
                                 decoration: InputDecoration(
                                     hintText: 'Máximo',
@@ -159,11 +184,11 @@ class _TelaInicialState extends State<TelaInicial> {
                       elevation: 0,
                     ),
                     onPressed: () {
-                      if (int.parse(quantnumEC.text) <=
-                          int.parse(maxEC.text) - int.parse(minEC.text)) {
-                        final lista = listaNumeros(int.parse(quantnumEC.text),
-                            min: int.parse(minEC.text),
-                            max: int.parse(maxEC.text));
+                      if (int.parse(_quantnumEC.text) <=
+                          int.parse(_maxEC.text) - int.parse(_minEC.text)) {
+                        final lista = listaNumeros(int.parse(_quantnumEC.text),
+                            min: int.parse(_minEC.text),
+                            max: int.parse(_maxEC.text));
                         abrirContador(context, lista);
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -192,6 +217,14 @@ class _TelaInicialState extends State<TelaInicial> {
                     },
                     child: const Text('Contribuir com PIX')),
               ],
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            Container(
+              width: 320,
+              height: 250,
+              child: AdWidget(ad: myBanner),
             )
           ],
         ),
